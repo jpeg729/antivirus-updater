@@ -5,7 +5,23 @@ var cheerio = require('cheerio');
 var fs      = require('fs');
 var colors  = require('colors');
 var log     = require('loglevel');
-log.setLevel('debug');
+
+var commandLineArgs = require("command-line-args");
+var cli = commandLineArgs([
+    { name: "loglevel", alias: "l", type: String },
+    { name: "help", alias: "h", type: Boolean }
+]);
+var options = cli.parse();
+log.setLevel(options.loglevel || 'info');
+var usage = cli.getUsage({
+    title: "antivirus-updater",
+    description: "Checks for updates to my favourite antivirus tools and downloads them into the current directory",
+    footer: "Project home: [underline]{https://github.com/jpcours/antivirus-updater}"
+});
+if (options.help) {
+  console.log(usage);
+  process.exit();
+}
 
 var cat = {
   safe_mode: '0_safe_mode',

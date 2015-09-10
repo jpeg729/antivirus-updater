@@ -13,6 +13,11 @@
     "cheerio": "*",
     "fs": "*",
     "colors": "*",
-    "loglevel": "*"
-  }
+    "loglevel": "*",
+    "command-line-args": "~1.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/jpcours/antivirus-updater/issues"
+  },
+  "license": "MIT"
 }
