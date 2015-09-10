@@ -1,0 +1,18 @@
+{
+  "name": "antivirus-updater",
+  "version": "0.0.0",
+  "description": "Checks for updates to my favourite antivirus tools and downloads them into the current directory",
+  "author": "John Page",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jpcours/antivirus-updater.git"
+  },
+  "dependencies": {
+    "request": "*",
+    "cheerio": "*",
+    "fs": "*",
+    "colors": "*",
+    "loglevel": "*"
+  }
+}
