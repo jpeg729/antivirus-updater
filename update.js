@@ -1,11 +1,12 @@
 #!/usr/bin/node
 
-var request = require('request');
-var cheerio = require('cheerio');
-var fs      = require('fs');
-var colors  = require('colors');
-var log     = require('loglevel');
-var filesize= require('filesize');
+var request  = require('request');
+var cheerio  = require('cheerio');
+var fs       = require('fs');
+var colors   = require('colors');
+var log      = require('loglevel');
+var filesize = require('filesize');
+var mkdirp   = require('mkdirp');
 
 var commandLineArgs = require("command-line-args");
 var cli = commandLineArgs([
@@ -120,15 +121,8 @@ function dl(url, prefix, category, filetype) {
   }
   
   // create category directory
-  try {
-    fs.mkdirSync(category);
-    log.info('Created directory'.cyan.bold, category);
-  }
-  catch (e) {
-    if (e.code != 'EEXIST') {
-      log.error('Could not create directory'.red.bold, category.bold);
-      return;
-    }
+  if (mkdirp.sync('Downloads/' + category)) {
+    log.info('Created directory'.cyan.bold, 'Downloads/' + category);
   }
   
   // Get download filename
@@ -146,7 +140,7 @@ function dl(url, prefix, category, filetype) {
   
   function continu(host, path, size) {
     var name = parseName(host, path, prefix, filetype);
-    var destination = category + '/' + name;
+    var destination = 'Downloads/' + category + '/' + name;
     
     // check for an existing file of matching name & size
     // TODO save ETag and check that
@@ -168,7 +162,7 @@ function dl(url, prefix, category, filetype) {
         log.error(response.headers);
       })
       .on('complete', function(response) {
-        log.info('Wrote'.green.bold, name, 'to'.green, category);
+        log.info(name.yellow.bold, 'written', 'to', category.yellow.bold);
       })
       .pipe(fs.createWriteStream(destination));
   }
