@@ -176,7 +176,14 @@ function parseName(host, path, prefix, filetype) {
     name = prefix;
   }
   else {
-    var idx;
+    // Clean parameters
+    var idx = path.indexOf('?');
+    if (idx > 0) {
+      log.trace('? in path', path, '->', path.substring(1, idx));
+      path = path.substring(1, idx);
+    }
+    
+    // if path endswith / then we are going to have to add a file extension to the name
     if (path.substr(-1) == '/') {
       log.debug("String endswith /".cyan);
       idx = path.lastIndexOf('/', path.length - 2);
@@ -238,16 +245,19 @@ bleepingcomputer('http://www.bleepingcomputer.com/download/hijackthis/', '', cat
 bleepingcomputer('http://www.bleepingcomputer.com/download/mcafee-labs-rootkit-remover/', 'McAfee-Labs', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/panda-anti-rootkit/', 'Panda', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/sophos-virus-removal-tool/', '', cat.fast);
-bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', '', cat.rootkit);
+bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', 'Microsoft', cat.rootkit); // TODO unzip it
 bleepingcomputer('http://www.bleepingcomputer.com/download/autoruns/', '', cat.tools);
 bleepingcomputer('http://www.bleepingcomputer.com/download/process-explorer/', '', cat.tools);
-bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.rootkit); // TODO better name
+bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/emsisoft-antimalware/', '', cat.slow);
 bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', cat.extra);
-
-parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/HitmanPro"]'], '', cat.extra);
 //*/
 
+parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/HitmanPro"]'], '', cat.extra);
+dl('https://zemana.com/Download/AntiMalware/Portable/Zemana.AntiMalware.Portable.exe?new_affid=189', '', cat.fast);
+dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
+//*/
+parse('http://www.bitdefender.com/solutions/adware-removal-tool-for-pc.html', ['.free-download'], 'BitDefender-AdWare-Remover', cat.fast);
 
 dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.slow);
 //dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.tools);
