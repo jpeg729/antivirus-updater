@@ -29,12 +29,12 @@ var cat = {
   process: '1_process',
   fast: '2_fast',
   slow: '3_slow',
-  extra: 'extra',
-  rootkit: 'rootkit',
-  diagnosis: 'diagnosis',
+  extra: '4_extra',
+  rootkit: '2_rootkit',
+  diagnosis: '4_extra',
   tools: 'tools',
-  fix: 'fix',
-  tuneup: 'tuneup',
+  fix: '5_fix',
+  tuneup: '5_fix',
   mac: 'mac'
 }
 
@@ -61,11 +61,11 @@ function parse(url, selectors, prefix, category, filetype) {
         log.debug('foreach a'.magenta, ',', prefix, ',', category, ',', filetype);
         log.trace(this);
         
-        var url = $(this).attr('href');
+        var url = this.attribs.href || this.attribs.src;
         if (url) {
           url = url.replace(/⟨/g, '&'); // hacky bugfix, sometimes the last & of an url gets changed to (
         }
-        else {
+        else { // this case needs a little love
           url = this.attribs.content;
           var idx = url.indexOf('=');
           url = url.substr(idx + 1);
@@ -99,6 +99,7 @@ function parse(url, selectors, prefix, category, filetype) {
 
 function dl(url, prefix, category, filetype) {
   log.debug('dl'.magenta, url, ',', prefix, ',', category, ',', filetype);
+  
   if (!category) {
     log.error('No category given for'.red.bold, url);
     return;
@@ -115,57 +116,49 @@ function dl(url, prefix, category, filetype) {
       return;
     }
   }
+  var name;
   
-  var name, destination;
-  var dsize, host, path;
+  // Get download filename
+  request
+    .head(url)
+    .on('response', function(response) {
+      log.debug('Getting name'.cyan.bold, url, response.request.path.cyan.bold);
+      log.debug(response.headers);
+      continu(response.request.host, response.request.path, response.headers['content-length']);
+    })
+    .on('error', function(response) {
+      log.error('Error downloading headers'.red.bold, url);
+      log.error(response.headers);
+    })
   
-  /*
-   * While it may seem better to do a HEAD request first, and then check whether
-   * we have the file or not, a lot of servers return 0 for the content length.
-   * So instead, we check while the download starts, and abort if need be.
-   */
-  var req = request.get(url);
-  req.on('response', function(response) {
-    log.debug('Getting name'.cyan.bold, url, response.request.path.cyan.bold);
-    log.trace(response);
-    log.debug(response.headers);
+  function continu(host, path, size) {
+    var name = parseName(host, path, prefix, filetype);
+    var destination = category + '/' + name;
     
-    // response details
-    dsize = response.headers['content-length'];
-    host = response.request.host;
-    path = response.request.path; // not always the same as in the url, contains useful filename info
+    // check for an existing file of matching name & size
+    // TODO save ETag and check that
+    var fsize = getFileSize(destination);
     
-    // calculate destination filename
-    name = parseName(host, path, prefix, filetype);
-    destination = category + '/' + name;
-    log.debug('Will download'.magenta, name, 'from'.green, url, 'to'.green, destination);
-    
-    // look for existing file & get its size
-    var size = getFileSize(destination);
-    
-    if (size != dsize) {
-      try {
-        dsize = filesize(dsize);
-      }
-      catch (e) {
-        log.warn(e)
-      }
-      log.info('Downloading'.yellow.bold, name,'->'.yellow, category.green, '(', dsize, ')');
-      // add pipe
-      req.pipe(fs.createWriteStream(destination));
+    if (fsize == size) {
+      log.info('Up-to-date'.green.bold, category, '-'.green, name);
+      return;
     }
-    else {
-      log.info('Up-to-date'.green.bold, destination);
-      req.abort();
-    }
-  })
-  .on('error', function(response) {
-    log.error('Error downloading'.red.bold, url);
-    log.error(response.headers);
-  })
-  .on('complete', function(response) {
-    log.info('Wrote'.green.bold, name, 'to', destination.green);
-  })
+    
+    request
+      .get(url)
+      .on('response', function(response) {
+        log.info('Downloading'.yellow.bold, name,'->'.yellow, category.green, '(', filesize(size || 0), ')');
+        log.trace(response);
+      })
+      .on('error', function(response) {
+        log.error('Error downloading'.red.bold, url);
+        log.error(response.headers);
+      })
+      .on('complete', function(response) {
+        log.info('Wrote'.green.bold, name, 'to'.green, category);
+      })
+      .pipe(fs.createWriteStream(destination));
+  }
 }
 
 function parseName(host, path, prefix, filetype) {
@@ -186,7 +179,7 @@ function parseName(host, path, prefix, filetype) {
       name = path.substring(idx + 1);
     }
     
-    if (!name) {
+    if (!name || prefix == 'SuperAntiSpyware_Portable') {
       name = prefix;
     }
     else if (prefix) {
@@ -224,7 +217,7 @@ function bleepingcomputer(url, prefix, category, filetype) {
   parse(url, selectors, prefix, category);
 }
 
-//erase(/.exe$/);
+
 dl('http://dl.emsisoft.com/EmsisoftEmergencyKit.exe', '', cat.slow);
 dl('http://devbuilds.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe', 'Kaspersky_VirusRemovalTool', cat.fast);
 dl('http://media.kaspersky.com/utilities/VirusUtilities/RU/cleanautorun.exe', 'Kaspersky', cat.fix);
@@ -242,10 +235,10 @@ bleepingcomputer('http://www.bleepingcomputer.com/download/autoruns/', '', cat.t
 bleepingcomputer('http://www.bleepingcomputer.com/download/process-explorer/', '', cat.tools);
 bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.rootkit); // TODO better name
 bleepingcomputer('http://www.bleepingcomputer.com/download/emsisoft-antimalware/', '', cat.slow);
-//*/
 bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', cat.extra);
 
 parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/HitmanPro"]'], '', cat.extra);
+//*/
 
 
 dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.slow);
@@ -254,8 +247,8 @@ dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.
 dl('https://downloads.malwarebytes.org/file/mbar/http://dl.surfright.nl/HitmanPro_x64.exe', 'Malwarebytes_AntiRootkit_Beta', cat.rootkit);
 dl('https://downloads.malwarebytes.org/file/chameleon/', 'Malwarebytes', cat.slow);
 dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup);
-dl('https://www.malwarebytes.org/mac-download/', 'Malwarebytes', cat.mac, '.dmg');
 //*/
+//parse('https://www.malwarebytes.org/mac-download/', '.greencta', 'Malwarebytes', cat.mac, '.dmg');
 
 
 parse('http://housecall.trendmicro.com/', ['#download-form a.button'], 'TrendMicro', cat.extra);
