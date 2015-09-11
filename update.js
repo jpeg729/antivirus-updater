@@ -164,7 +164,8 @@ function dl(url, prefix, category, filetype) {
 function parseName(host, path, prefix, filetype) {
   var name;
   
-  if (host == 'www.bleepingcomputer.com') {
+  if (prefix == 'SuperAntiSpyware_Portable') {
+    // SuperAntiSpyware servers give a new random filename each time
     name = prefix;
   }
   else {
@@ -172,14 +173,14 @@ function parseName(host, path, prefix, filetype) {
     if (path.substr(-1) == '/') {
       log.debug("String endswith /".cyan);
       idx = path.lastIndexOf('/', path.length - 2);
-      name = path.slice(idx + 1, -1) + (filetype || '.exe'); // horrible hack
+      name = path.slice(idx + 1, -1) + (filetype || '.exe');
     }
     else {
       idx = path.lastIndexOf('/');
       name = path.substring(idx + 1);
     }
     
-    if (!name || prefix == 'SuperAntiSpyware_Portable') {
+    if (!name) {
       name = prefix;
     }
     else if (prefix) {
@@ -242,8 +243,8 @@ parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/
 
 
 dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.slow);
-//dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.manual);
-//dl('https://downloads.malwarebytes.org/file/regassassin/', 'Malwarebytes', cat.manual);
+//dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.tools);
+//dl('https://downloads.malwarebytes.org/file/regassassin/', 'Malwarebytes', cat.tools);
 dl('https://downloads.malwarebytes.org/file/mbar/http://dl.surfright.nl/HitmanPro_x64.exe', 'Malwarebytes_AntiRootkit_Beta', cat.rootkit);
 dl('https://downloads.malwarebytes.org/file/chameleon/', 'Malwarebytes', cat.slow);
 dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup);
