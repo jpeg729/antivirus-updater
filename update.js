@@ -9,8 +9,10 @@ var filesize= require('filesize');
 
 var commandLineArgs = require("command-line-args");
 var cli = commandLineArgs([
-    { name: "loglevel", alias: "l", type: String },
-    { name: "help", alias: "h", type: Boolean }
+  { name: "loglevel", alias: "l", type: String },
+  { name: "help", alias: "h", type: Boolean },
+  { name: "category", alias: "c", type: String },
+  { name: "filter", alias: "f", type: String }
 ]);
 var options = cli.parse();
 log.setLevel(options.loglevel || 'info');
@@ -39,6 +41,12 @@ var cat = {
 }
 
 function parse(url, selectors, prefix, category, filetype) {
+  if (options.category && options.category != category) {
+    return;
+  }
+  if (options.filter && url.indexOf(options.filter) < 0 && prefix.indexOf(options.filter) < 0) {
+    return;
+  }
   log.debug('parse'.magenta, url, ',', selectors, ',', prefix, ',', category, ',', filetype);
   
   request(url, function (error, response, body) {
@@ -98,6 +106,12 @@ function parse(url, selectors, prefix, category, filetype) {
 }
 
 function dl(url, prefix, category, filetype) {
+  if (options.category && options.category != category) {
+    return;
+  }
+  if (options.filter && url.indexOf(options.filter) < 0 && prefix.indexOf(options.filter) < 0) {
+    return;
+  }
   log.debug('dl'.magenta, url, ',', prefix, ',', category, ',', filetype);
   
   if (!category) {
@@ -116,7 +130,6 @@ function dl(url, prefix, category, filetype) {
       return;
     }
   }
-  var name;
   
   // Get download filename
   request
@@ -139,7 +152,7 @@ function dl(url, prefix, category, filetype) {
     // TODO save ETag and check that
     var fsize = getFileSize(destination);
     
-    if (fsize == size) {
+    if (fsize && fsize == size) {
       log.info('Up-to-date'.green.bold, category, '-'.green, name);
       return;
     }
@@ -202,7 +215,7 @@ function getFileSize(destination) {
   }
   else {
     log.debug('File not found'.cyan);
-    return 0;
+    return undefined;
   }
 }
 
@@ -222,7 +235,7 @@ function bleepingcomputer(url, prefix, category, filetype) {
 dl('http://dl.emsisoft.com/EmsisoftEmergencyKit.exe', '', cat.slow);
 dl('http://devbuilds.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe', 'Kaspersky_VirusRemovalTool', cat.fast);
 dl('http://media.kaspersky.com/utilities/VirusUtilities/RU/cleanautorun.exe', 'Kaspersky', cat.fix);
-dl('http://media.kaspersky.com/utilities/VirusUtilities/EN/tdsskiller.exe', '', cat.rootkit);
+dl('http://media.kaspersky.com/utilities/VirusUtilities/EN/tdsskiller.exe', 'Kaspersky', cat.rootkit);
 //*/
 
 bleepingcomputer('http://www.bleepingcomputer.com/download/adwcleaner/', '', cat.fast);
