@@ -151,20 +151,36 @@ function dl(url, prefix, category, filetype) {
       return;
     }
     
-    request
-      .get(url)
-      .on('response', function(response) {
+    /*
+     * While it may seem better to do a HEAD request first, and then check whether
+     * we have the file or not, a lot of servers return 0 for the content length.
+     * So instead, we check while the download starts, and abort if need be.
+     */
+    var req = request.get(url);
+    req.on('response', function(response) {
+      log.debug('Getting name'.cyan.bold, url, response.request.path.cyan.bold);
+      log.trace(response);
+      log.debug(response.headers);
+      
+      // check size again
+      size = response.headers['content-length'];
+      if (!fsize || fsize != size) {
         log.info('Downloading'.yellow.bold, name,'->'.yellow, category.green, '(', filesize(size || 0), ')');
-        log.trace(response);
-      })
-      .on('error', function(response) {
-        log.error('Error downloading'.red.bold, url);
-        log.error(response.headers);
-      })
-      .on('complete', function(response) {
-        log.info(name.yellow.bold, 'written', 'to', category.yellow.bold);
-      })
-      .pipe(fs.createWriteStream(destination));
+        // add pipe
+        req.pipe(fs.createWriteStream(destination));
+      }
+      else {
+        log.info('Up-to-date'.green.bold, category, '-'.green, name);
+        req.abort();
+      }
+    })
+    .on('error', function(response) {
+      log.error('Error downloading'.red.bold, url);
+      log.error(response.headers);
+    })
+    .on('complete', function(response) {
+      log.info(name.yellow.bold, 'written', 'to', category.yellow.bold);
+    })
   }
 }
 
