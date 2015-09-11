@@ -28,7 +28,7 @@ if (options.help) {
 
 var cat = {
   safe_mode: '0_safe_mode',
-  process: '1_process',
+  kill: '1_kill',
   fast: '2_fast',
   slow: '3_slow',
   extra: '4_extra',
@@ -239,7 +239,7 @@ dl('http://media.kaspersky.com/utilities/VirusUtilities/EN/tdsskiller.exe', 'Kas
 //*/
 
 bleepingcomputer('http://www.bleepingcomputer.com/download/adwcleaner/', '', cat.fast);
-bleepingcomputer('http://www.bleepingcomputer.com/download/rkill/', '', cat.process);
+bleepingcomputer('http://www.bleepingcomputer.com/download/rkill/', '', cat.kill);
 bleepingcomputer('http://www.bleepingcomputer.com/download/hijackthis/', '', cat.diagnosis);
 bleepingcomputer('http://www.bleepingcomputer.com/download/mcafee-labs-rootkit-remover/', 'McAfee-Labs', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/panda-anti-rootkit/', 'Panda', cat.rootkit);
