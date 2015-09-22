@@ -27,6 +27,8 @@ if (options.help) {
   process.exit();
 }
 
+process.chdir(__dirname);
+
 var cat = {
   safe_mode: '0_safe_mode',
   kill: '1_kill',
@@ -38,7 +40,8 @@ var cat = {
   tools: 'tools',
   fix: '5_fix',
   tuneup: '5_fix',
-  mac: 'mac'
+  mac: 'mac',
+  licences_and_passwords: 'licences_and_passwords'
 }
 
 function parse(url, selectors, prefix, category, filetype) {
@@ -261,19 +264,22 @@ bleepingcomputer('http://www.bleepingcomputer.com/download/hijackthis/', '', cat
 bleepingcomputer('http://www.bleepingcomputer.com/download/mcafee-labs-rootkit-remover/', 'McAfee-Labs', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/panda-anti-rootkit/', 'Panda', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/sophos-virus-removal-tool/', '', cat.fast);
-bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', 'Microsoft', cat.rootkit); // TODO unzip it
+bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', 'Microsoft', cat.rootkit); // TODO unzip it var yauzl = require("yauzl");
 bleepingcomputer('http://www.bleepingcomputer.com/download/autoruns/', '', cat.tools);
 bleepingcomputer('http://www.bleepingcomputer.com/download/process-explorer/', '', cat.tools);
 bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/emsisoft-antimalware/', '', cat.slow);
 bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', cat.extra);
 //*/
+parse('http://support.eset.de/kb3527/', ['a[href^="http://download.eset.com"]'], 'ESET', cat.tools);
+dl('http://download.keit.co/current/recall.zip', 'keit.co', cat.licences_and_passwords);
 
 parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/HitmanPro"]'], '', cat.extra);
 dl('https://zemana.com/Download/AntiMalware/Portable/Zemana.AntiMalware.Portable.exe?new_affid=189', '', cat.fast);
 dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
 //*/
 parse('http://www.bitdefender.com/solutions/adware-removal-tool-for-pc.html', ['.free-download'], 'BitDefender-AdWare-Remover', cat.fast);
+parse('http://launcher.nirsoft.net/download.html', ['a[href^="http://download.nirsoft.net/nirsoft_package_1"]'], '', cat.tools);
 
 dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.slow);
 //dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.tools);
