@@ -251,12 +251,35 @@ function bleepingcomputer(url, prefix, category, filetype) {
   parse(url, selectors, prefix, category);
 }
 
-
+// Emisoft & Kaspersky
 dl('http://dl.emsisoft.com/EmsisoftEmergencyKit.exe', '', cat.slow);
 dl('http://devbuilds.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe', 'Kaspersky_VirusRemovalTool', cat.fast);
 dl('http://media.kaspersky.com/utilities/VirusUtilities/RU/cleanautorun.exe', 'Kaspersky', cat.fix);
 dl('http://media.kaspersky.com/utilities/VirusUtilities/EN/tdsskiller.exe', 'Kaspersky', cat.rootkit);
 //*/
+
+// MalwareBytes
+dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.slow);
+dl('https://downloads.malwarebytes.org/file/mbar/', 'Malwarebytes_AntiRootkit_Beta', cat.rootkit);
+dl('https://downloads.malwarebytes.org/file/chameleon/', 'Malwarebytes', cat.slow);
+dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup);
+//dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.tools); // not portable
+//dl('https://downloads.malwarebytes.org/file/regassassin/', 'Malwarebytes', cat.tools);  // not portable
+//parse('https://www.malwarebytes.org/mac-download/', '.greencta', 'Malwarebytes', cat.mac, '.dmg');
+//*/
+
+// TrendMicro
+parse('http://housecall.trendmicro.com/', ['#download-form a.button'], 'TrendMicro', cat.extra);
+parse('http://free.antivirus.com/us/rootkit-buster/index.html', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit);
+parse('http://free.antivirus.com/us/rubotted/', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit);
+//*/
+
+// Divers autres
+parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/HitmanPro"]'], '', cat.extra);
+dl('https://zemana.com/Download/AntiMalware/Portable/Zemana.AntiMalware.Portable.exe?new_affid=189', '', cat.fast);
+dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
+parse('http://www.bitdefender.com/solutions/adware-removal-tool-for-pc.html', ['.free-download'], 'BitDefender-AdWare-Remover', cat.fast);
+dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.extra);
 
 bleepingcomputer('http://www.bleepingcomputer.com/download/adwcleaner/', '', cat.fast);
 bleepingcomputer('http://www.bleepingcomputer.com/download/rkill/', '', cat.kill);
@@ -273,27 +296,4 @@ bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', ca
 //*/
 parse('http://support.eset.de/kb3527/', ['a[href^="http://download.eset.com"]'], 'ESET', cat.tools);
 dl('http://download.keit.co/current/recall.zip', 'keit.co', cat.licences_and_passwords);
-
-parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/HitmanPro"]'], '', cat.extra);
-dl('https://zemana.com/Download/AntiMalware/Portable/Zemana.AntiMalware.Portable.exe?new_affid=189', '', cat.fast);
-dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
-//*/
-parse('http://www.bitdefender.com/solutions/adware-removal-tool-for-pc.html', ['.free-download'], 'BitDefender-AdWare-Remover', cat.fast);
 parse('http://launcher.nirsoft.net/download.html', ['a[href^="http://download.nirsoft.net/nirsoft_package_1"]'], '', cat.tools);
-
-dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.slow);
-//dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.tools);
-//dl('https://downloads.malwarebytes.org/file/regassassin/', 'Malwarebytes', cat.tools);
-dl('https://downloads.malwarebytes.org/file/mbar/http://dl.surfright.nl/HitmanPro_x64.exe', 'Malwarebytes_AntiRootkit_Beta', cat.rootkit);
-dl('https://downloads.malwarebytes.org/file/chameleon/', 'Malwarebytes', cat.slow);
-dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup);
-//*/
-//parse('https://www.malwarebytes.org/mac-download/', '.greencta', 'Malwarebytes', cat.mac, '.dmg');
-
-
-parse('http://housecall.trendmicro.com/', ['#download-form a.button'], 'TrendMicro', cat.extra);
-parse('http://free.antivirus.com/us/rootkit-buster/index.html', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit);
-parse('http://free.antivirus.com/us/rubotted/', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit);
-
-dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.extra);
-//*/
