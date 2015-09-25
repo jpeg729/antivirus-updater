@@ -73,25 +73,25 @@ function parse(url, selectors, prefix, category, filetype) {
         log.debug('foreach a'.magenta, ',', prefix, ',', category, ',', filetype);
         log.trace(this);
         
-        var url = this.attribs.href || this.attribs.src;
-        if (url) {
-          url = url.replace(/⟨/g, '&'); // hacky bugfix, sometimes the last & of an url gets changed to (
+        var newUrl = this.attribs.href || this.attribs.src;
+        if (newUrl) {
+          newUrl = newUrl.replace(/⟨/g, '&'); // hacky bugfix, sometimes the last & of an url gets changed to (
         }
         else { // this case needs a little love
-          url = this.attribs.content;
-          var idx = url.indexOf('=');
-          url = url.substr(idx + 1);
+          newUrl = this.attribs.content;
+          var idx = newUrl.indexOf('=');
+          newUrl = newUrl.substr(idx + 1);
         }
         
-        if (seen.indexOf(url) < 0) {
-          seen.push(url);
-          log.debug('Found', url);
+        if (seen.indexOf(newUrl) < 0) {
+          seen.push(newUrl);
+          log.debug('Found', newUrl);
         
           if (selectors.length) {
-            parse(url, selectors, prefix, category, filetype);
+            parse(newUrl, selectors, prefix, category, filetype);
           }
           else {
-            dl(url, prefix, category, filetype);
+            dl(newUrl, prefix, category, filetype, url);
           }
         }
       });
@@ -128,9 +128,20 @@ function dl(url, prefix, category, filetype) {
     log.info('Created directory'.cyan.bold, 'Downloads/' + category);
   }
   
+  // Set download options
+  requestOptions = {
+    url: url,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36'
+    }
+  };
+  if (referer) {
+    requestOptions.headers['Referer'] = referer;
+  }
+  
   // Get download filename
   request
-    .head(url)
+    .head(requestOptions)
     .on('response', function(response) {
       log.debug('Getting name'.cyan.bold, url, response.request.path.cyan.bold);
       log.debug(response.headers);
@@ -159,7 +170,7 @@ function dl(url, prefix, category, filetype) {
      * we have the file or not, a lot of servers return 0 for the content length.
      * So instead, we check while the download starts, and abort if need be.
      */
-    var req = request.get(url);
+    var req = request.get(requestOptions);
     req.on('response', function(response) {
       log.debug('Getting name'.cyan.bold, url, response.request.path.cyan.bold);
       log.trace(response);
@@ -287,7 +298,7 @@ bleepingcomputer('http://www.bleepingcomputer.com/download/hijackthis/', '', cat
 bleepingcomputer('http://www.bleepingcomputer.com/download/mcafee-labs-rootkit-remover/', 'McAfee-Labs', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/panda-anti-rootkit/', 'Panda', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/sophos-virus-removal-tool/', '', cat.fast);
-bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', 'Microsoft', cat.rootkit); // TODO unzip it var yauzl = require("yauzl");
+bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', 'Microsoft', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/autoruns/', '', cat.tools);
 bleepingcomputer('http://www.bleepingcomputer.com/download/process-explorer/', '', cat.tools);
 bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.rootkit);
