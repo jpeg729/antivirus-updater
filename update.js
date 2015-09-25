@@ -203,7 +203,7 @@ function parseName(host, path, prefix, filetype) {
   
   if (prefix == 'SuperAntiSpyware_Portable') {
     // SuperAntiSpyware servers give a new random filename each time
-    name = prefix;
+    name = prefix + filetype;
   }
   else {
     // Clean parameters
@@ -290,7 +290,7 @@ parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/
 dl('https://zemana.com/Download/AntiMalware/Portable/Zemana.AntiMalware.Portable.exe?new_affid=189', '', cat.fast);
 dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
 parse('http://www.bitdefender.com/solutions/adware-removal-tool-for-pc.html', ['.free-download'], 'BitDefender-AdWare-Remover', cat.fast);
-dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.extra);
+dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.extra, '.exe');
 
 bleepingcomputer('http://www.bleepingcomputer.com/download/adwcleaner/', '', cat.fast);
 bleepingcomputer('http://www.bleepingcomputer.com/download/rkill/', '', cat.kill);
@@ -305,6 +305,7 @@ bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', ca
 bleepingcomputer('http://www.bleepingcomputer.com/download/emsisoft-antimalware/', '', cat.slow);
 bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', cat.extra);
 //*/
+parse('http://www.tweaking.com/content/page/windows_repair_all_in_one.html', ['a[href^="http://www.tweaking.com/files/setup"][href$=".zip"]'], '', cat.fix);
 parse('http://support.eset.de/kb3527/', ['a[href^="http://download.eset.com"]'], 'ESET', cat.tools);
 dl('http://download.keit.co/current/recall.zip', 'keit.co', cat.licences_and_passwords);
 parse('http://launcher.nirsoft.net/download.html', ['a[href^="http://download.nirsoft.net/nirsoft_package_1"]'], '', cat.tools);
