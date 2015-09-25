@@ -7,6 +7,7 @@ var colors   = require('colors');
 var log      = require('loglevel');
 var filesize = require('filesize');
 var mkdirp   = require('mkdirp');
+var yauzl    = require("yauzl");
 
 var commandLineArgs = require("command-line-args");
 var cli = commandLineArgs([
@@ -49,6 +50,7 @@ function parse(url, selectors, prefix, category, filetype) {
     return;
   }
   if (options.filter && url.indexOf(options.filter) < 0 && prefix.indexOf(options.filter) < 0) {
+    log.info('Skipping'.green, url);
     return;
   }
   log.debug('parse'.magenta, url, ',', selectors, ',', prefix, ',', category, ',', filetype);
@@ -109,11 +111,24 @@ function parse(url, selectors, prefix, category, filetype) {
   });
 }
 
-function dl(url, prefix, category, filetype) {
+function bleepingcomputer(url, prefix, category, filetype) {
+  // Download a file from its page on bleepingcomputer
+  // We assume that the first dl_but_choice is the one we want
+  selectors = ['.dl_choices .dl_but_choice:first-of-type a', 'meta[content^=3]'];
+  filetype = filetype || '.exe';
+  
+  var idx = url.lastIndexOf('/', url.length - 2);
+  name = url.slice(idx + 1, -1) + filetype;
+  
+  parse(url, selectors, prefix, category);
+}
+
+function dl(url, prefix, category, filetype, referer) {
   if (options.category && options.category != category) {
     return;
   }
   if (options.filter && url.indexOf(options.filter) < 0 && prefix.indexOf(options.filter) < 0) {
+    log.info('Skipping'.green, url);
     return;
   }
   log.debug('dl'.magenta, url, ',', prefix, ',', category, ',', filetype);
@@ -194,6 +209,9 @@ function dl(url, prefix, category, filetype) {
     })
     .on('complete', function(response) {
       log.info(name.yellow.bold, 'written', 'to', category.yellow.bold);
+      if (/\.zip$/.test(destination)) {
+        unzip(destination);
+      }
     })
   }
 }
@@ -250,16 +268,43 @@ function getFileSize(destination) {
   }
 }
 
-function bleepingcomputer(url, prefix, category, filetype) {
-  // Download a file from its page on bleepingcomputer
-  // We assume that the first dl_but_choice is the one we want
-  selectors = ['.dl_choices .dl_but_choice:first-of-type a', 'meta[content^=3]'];
-  filetype = filetype || '.exe';
+function unzip(zipfilename) {
   
-  var idx = url.lastIndexOf('/', url.length - 2);
-  name = url.slice(idx + 1, -1) + filetype;
+  var destination = zipfilename.replace(/\.zip$/, '/');
+  log.info('Unzipping'.blue.bold, zipfilename, 'to'.blue, destination);
   
-  parse(url, selectors, prefix, category);
+  // Prepare destination directory
+  if (fs.existsSync(destination)) {
+    // Archive the old extracted files
+    var ts_hms = new Date();
+    var archive = destination.slice(0, -1).replace(/^.*\//, 'Old_zips/')
+    archive += "_archived_" + ts_hms.toISOString();
+    if (!fs.existsSync('Old_zips')) {
+      fs.mkdirSync('Old_zips');
+    }
+    fs.renameSync(destination, archive);
+  }
+  fs.mkdirSync(destination);
+  
+  yauzl.open(zipfilename, function(err, zipfile) {
+    if (err) {
+      log.error('Error unzipping'.red.bold, zipfilename);
+      log.debug(err);
+    }
+    zipfile.on("entry", function(entry) {
+      if (/\/$/.test(entry.fileName)) {
+        // directory file names end with '/'
+        mkdirp(destination + entry.fileName);
+        return;
+      }
+      zipfile.openReadStream(entry, function(err, readStream) {
+        if (err) throw err;
+        // ensure parent directory exists, and then: 
+        readStream.pipe(fs.createWriteStream(destination + entry.fileName));
+        log.trace('Extracting file', destination + entry.fileName);
+      });
+    });
+  });
 }
 
 // Emisoft & Kaspersky

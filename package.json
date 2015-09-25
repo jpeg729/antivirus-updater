@@ -15,7 +15,8 @@
     "filesize": "^3.1.3",
     "loglevel": "^1.4.0",
     "mkdirp": "^0.5.1",
-    "request": "^2.63.0"
+    "request": "^2.63.0",
+    "yauzl": "^2.3.1"
   },
   "bugs": {
     "url": "https://github.com/jpcours/antivirus-updater/issues"
