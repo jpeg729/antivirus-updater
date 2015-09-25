@@ -9,13 +9,13 @@
     "url": "https://github.com/jpcours/antivirus-updater.git"
   },
   "dependencies": {
-    "request": "*",
-    "cheerio": "*",
-    "colors": "*",
-    "loglevel": "*",
-    "command-line-args": "~1.0.0",
-    "filesize": "~3.1.3",
-    "mkdirp": "~0.5.1"
+    "cheerio": "^0.19.0",
+    "colors": "^1.1.2",
+    "command-line-args": "^1.0.1",
+    "filesize": "^3.1.3",
+    "loglevel": "^1.4.0",
+    "mkdirp": "^0.5.1",
+    "request": "^2.63.0"
   },
   "bugs": {
     "url": "https://github.com/jpcours/antivirus-updater/issues"
