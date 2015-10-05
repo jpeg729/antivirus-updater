@@ -291,19 +291,21 @@ function unzip(zipfilename) {
       log.error('Error unzipping'.red.bold, zipfilename);
       log.debug(err);
     }
-    zipfile.on("entry", function(entry) {
-      if (/\/$/.test(entry.fileName)) {
-        // directory file names end with '/'
-        mkdirp(destination + entry.fileName);
-        return;
-      }
-      zipfile.openReadStream(entry, function(err, readStream) {
-        if (err) throw err;
-        // ensure parent directory exists, and then: 
-        readStream.pipe(fs.createWriteStream(destination + entry.fileName));
-        log.trace('Extracting file', destination + entry.fileName);
+    else {
+      zipfile.on("entry", function(entry) {
+        if (/\/$/.test(entry.fileName)) {
+          // directory file names end with '/'
+          mkdirp(destination + entry.fileName);
+          return;
+        }
+        zipfile.openReadStream(entry, function(err, readStream) {
+          if (err) throw err;
+          // ensure parent directory exists, and then: 
+          readStream.pipe(fs.createWriteStream(destination + entry.fileName));
+          log.trace('Extracting file', destination + entry.fileName);
+        });
       });
-    });
+    }
   });
 }
 
