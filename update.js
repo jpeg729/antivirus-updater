@@ -1,4 +1,5 @@
 #!/usr/bin/node
+'use strict';
 
 var request  = require('request');
 var cheerio  = require('cheerio');
@@ -60,9 +61,9 @@ function parse(url, selectors, prefix, category, filetype) {
     if (!error && response.statusCode == 200) {
       //log.info(body); // Show the HTML
       
-      var $ = cheerio.load(body);
-      var seen = [];
-      var selector;
+      let $ = cheerio.load(body);
+      let seen = [];
+      let selector;
       
       if (Array.isArray(selectors)) {
         selector = selectors.shift();
@@ -76,13 +77,13 @@ function parse(url, selectors, prefix, category, filetype) {
         log.debug('foreach a'.magenta, ',', prefix, ',', category, ',', filetype);
         log.trace(this);
         
-        var newUrl = this.attribs.href || this.attribs.src;
+        let newUrl = this.attribs.href || this.attribs.src;
         if (newUrl) {
           newUrl = newUrl.replace(/⟨/g, '&'); // hacky bugfix, sometimes the last & of an url gets changed to (
         }
         else { // this case needs a little love
           newUrl = this.attribs.content;
-          var idx = newUrl.indexOf('=');
+          let idx = newUrl.indexOf('=');
           newUrl = newUrl.substr(idx + 1);
         }
         
@@ -115,11 +116,11 @@ function parse(url, selectors, prefix, category, filetype) {
 function bleepingcomputer(url, prefix, category, filetype) {
   // Download a file from its page on bleepingcomputer
   // We assume that the first dl_but_choice is the one we want
-  selectors = ['.dl_choices .dl_but_choice:first-of-type a', 'meta[content^=3]'];
+  let selectors = ['.dl_choices .dl_but_choice:first-of-type a', 'meta[content^=3]'];
   filetype = filetype || '.exe';
   
-  var idx = url.lastIndexOf('/', url.length - 2);
-  name = url.slice(idx + 1, -1) + filetype;
+  let idx = url.lastIndexOf('/', url.length - 2);
+  let name = url.slice(idx + 1, -1) + filetype;
   
   parse(url, selectors, prefix, category);
 }
@@ -145,10 +146,13 @@ function dl(url, prefix, category, filetype, referer) {
   }
   
   // Set download options
-  requestOptions = {
+  let requestOptions = {
     url: url,
     headers: {
-      'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36'
+      'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36',
+      //'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+      //'Accept-Encoding': 'gzip, deflate',
+      //'Accept-Language': 'fr,en;q=0.8,en-US;q=0.6',
     }
   };
   if (referer) {
@@ -169,12 +173,12 @@ function dl(url, prefix, category, filetype, referer) {
     })
   
   function continu(host, path, size) {
-    var name = parseName(host, path, prefix, filetype);
-    var destination = 'Downloads/' + category + '/' + name;
+    let name = parseName(host, path, prefix, filetype);
+    let destination = 'Downloads/' + category + '/' + name;
     
     // check for an existing file of matching name & size
     // TODO save ETag and check that
-    var fsize = getFileSize(destination);
+    let fsize = getFileSize(destination);
     
     if (fsize && fsize == size) {
       log.info('Up-to-date'.green.bold, category, '-'.green, name);
@@ -186,14 +190,14 @@ function dl(url, prefix, category, filetype, referer) {
      * we have the file or not, a lot of servers return 0 for the content length.
      * So instead, we check while the download starts, and abort if need be.
      */
-    var req = request.get(requestOptions);
+    let req = request.get(requestOptions);
     req.on('response', function(response) {
       log.debug('Getting name'.cyan.bold, url, response.request.path.cyan.bold);
       log.trace(response);
       log.debug(response.headers);
       
       // check size again
-      size = response.headers['content-length'];
+      let size = response.headers['content-length'];
       if (!fsize || fsize != size) {
         log.info('Downloading'.yellow.bold, name,'->'.yellow, category.green, '(', filesize(size || 0), ')');
         // add pipe
@@ -218,7 +222,7 @@ function dl(url, prefix, category, filetype, referer) {
 }
 
 function parseName(host, path, prefix, filetype) {
-  var name;
+  let name = '';
   
   if (prefix == 'SuperAntiSpyware_Portable') {
     // SuperAntiSpyware servers give a new random filename each time
@@ -226,7 +230,7 @@ function parseName(host, path, prefix, filetype) {
   }
   else {
     // Clean parameters
-    var idx = path.indexOf('?');
+    let idx = path.indexOf('?');
     if (idx > 0) {
       log.trace('? in path', path, '->', path.substring(1, idx));
       path = path.substring(1, idx);
@@ -258,7 +262,7 @@ function parseName(host, path, prefix, filetype) {
 function getFileSize(destination) {
   
   if (fs.existsSync(destination)) {
-    var stat = fs.statSync(destination);
+    let stat = fs.statSync(destination);
     log.trace(stat);
     log.debug('File size'.cyan, stat.size)
     return stat.size;
@@ -271,14 +275,14 @@ function getFileSize(destination) {
 
 function unzip(zipfilename) {
   
-  var destination = zipfilename.replace(/\.zip$/, '/');
+  let destination = zipfilename.replace(/\.zip$/, '/');
   log.info('Unzipping'.blue.bold, zipfilename, 'to'.blue, destination);
   
   // Prepare destination directory
   if (fs.existsSync(destination)) {
     // Archive the old extracted files
-    var ts_hms = new Date();
-    var archive = destination.slice(0, -1).replace(/^.*\//, 'Old_zips/')
+    let ts_hms = new Date();
+    let archive = destination.slice(0, -1).replace(/^.*\//, 'Old_zips/')
     archive += "_archived_" + ts_hms.toISOString();
     if (!fs.existsSync('Old_zips')) {
       fs.mkdirSync('Old_zips');
@@ -290,7 +294,7 @@ function unzip(zipfilename) {
   yauzl.open(zipfilename, function(err, zipfile) {
     if (err) {
       log.error('Error unzipping'.red.bold, zipfilename);
-      log.debug(err);
+      log.error(err);
     }
     else {
       zipfile.on("entry", function(entry) {
@@ -310,66 +314,85 @@ function unzip(zipfilename) {
   });
 }
 
-// Emisoft & Kaspersky
-dl('http://dl.emsisoft.com/EmsisoftEmergencyKit.exe', '', cat.slow);
-dl('http://devbuilds.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe', 'Kaspersky_VirusRemovalTool', cat.fast);
-dl('http://media.kaspersky.com/utilities/VirusUtilities/RU/cleanautorun.exe', 'Kaspersky', cat.fix);
-dl('http://media.kaspersky.com/utilities/VirusUtilities/EN/tdsskiller.exe', 'Kaspersky', cat.rootkit);
-//*/
-
-// MalwareBytes
-dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.slow);
-dl('https://downloads.malwarebytes.org/file/mbar/', 'Malwarebytes_AntiRootkit_Beta', cat.rootkit);
-dl('https://downloads.malwarebytes.org/file/chameleon/', 'Malwarebytes', cat.slow);
-dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup);
-dl('http://downloads.malwarebytes.org/file/jrt', 'Malwarebytes_junkware-removal-tool', cat.fast);
-//dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.tools); // not portable
-//dl('https://downloads.malwarebytes.org/file/regassassin/', 'Malwarebytes', cat.tools);  // not portable
-//parse('https://www.malwarebytes.org/mac-download/', '.greencta', 'Malwarebytes', cat.mac, '.dmg');
-//*/
-
-// TrendMicro
-parse('http://housecall.trendmicro.com/', ['#download-form a.button'], 'TrendMicro', cat.fast); // 5mins
-parse('http://free.antivirus.com/us/rootkit-buster/index.html', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit); // fast
-parse('http://free.antivirus.com/us/rubotted/', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.extra);
-//*/
-
-// Divers autres
-parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/HitmanPro"]'], '', cat.extra);
-dl('https://zemana.com/Download/AntiMalware/Portable/Zemana.AntiMalware.Portable.exe?new_affid=189', '', cat.fast);
-dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
-parse('http://www.bitdefender.com/solutions/adware-removal-tool-for-pc.html', ['.free-download'], 'BitDefender-AdWare-Remover', cat.fast);
-dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.install, '.exe'); // not portable
-
-bleepingcomputer('http://www.bleepingcomputer.com/download/adwcleaner/', '', cat.fast);
+// Kill running stuff & fix a few basic probs
 bleepingcomputer('http://www.bleepingcomputer.com/download/rkill/', '', cat.kill);
-bleepingcomputer('http://www.bleepingcomputer.com/download/hijackthis/', '', cat.diagnosis);
-bleepingcomputer('http://www.bleepingcomputer.com/download/mcafee-labs-rootkit-remover/', 'McAfee-Labs', cat.rootkit); // real fast
-bleepingcomputer('http://www.bleepingcomputer.com/download/panda-anti-rootkit/', 'Panda', cat.rootkit);
-bleepingcomputer('http://www.bleepingcomputer.com/download/sophos-virus-removal-tool/', '', cat.fast);
+//*/
+
+// Fast acting tools
+bleepingcomputer('http://www.bleepingcomputer.com/download/adwcleaner/', '', cat.fast); // nice, quick and effective
+dl('http://media.kaspersky.com/utilities/VirusUtilities/EN/tdsskiller.exe', 'Kaspersky_Rootkit-Killer', cat.fast); // 2mins
+dl('http://devbuilds.kaspersky-labs.com/devbuilds/KVRT/latest/full/KVRT.exe', 'Kaspersky_Virus-Removal-Tool', cat.fast); // 2-3 mins
+dl('http://downloads.malwarebytes.org/file/jrt', 'Malwarebytes_junkware-removal-tool', cat.fast); // 2-3 mins
+bleepingcomputer('http://www.bleepingcomputer.com/download/mcafee-labs-rootkit-remover/', 'McAfee-Labs', cat.fast); // real fast
+dl('https://zemana.com/Download/AntiMalware/Portable/Zemana.AntiMalware.Portable.exe?new_affid=189', '', cat.fast); // 2mins, found bad root certificat
+parse('http://housecall.trendmicro.com/', ['#download-form a.button'], 'TrendMicro', cat.fast); // 5mins
+parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/HitmanPro"]'], '', cat.fast); // 10 mins, more if stuff needs analysing online
+parse('http://www.bitdefender.com/solutions/adware-removal-tool-for-pc.html', ['.free-download'], 'BitDefender-AdWare-Remover', cat.fast); // 10mins, finds stuff others don't
+bleepingcomputer('http://www.bleepingcomputer.com/download/combofix/', 'Win8.0-max', cat.fast); // can be slow 12mins on healthy win7
+//*/
+
+// Detect rootkits
+bleepingcomputer('http://www.bleepingcomputer.com/download/panda-anti-rootkit/', 'Panda', cat.rootkit); // not for win7
 bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', 'Microsoft', cat.rootkit); // didn't seem to work
+parse('http://free.antivirus.com/us/rootkit-buster/index.html', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit); // vfast
+//*/
+
+// Slower antistuffs
+dl('https://downloads.malwarebytes.org/file/mbar/', 'Malwarebytes_AntiRootkit_Beta', cat.slow); // >30mins
+dl('http://dl.emsisoft.com/EmsisoftEmergencyKit.exe', '', cat.slow);
+bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.slow); // slow ~25mins
+bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', cat.slow); // ~15mins
+//*/
+
+// Extra checks
+bleepingcomputer('http://www.bleepingcomputer.com/download/hijackthis/', '', cat.diagnosis);
+//*/
+
+// Fixers
+dl('http://media.kaspersky.com/utilities/VirusUtilities/RU/cleanautorun.exe', 'Kaspersky', cat.fix);
+dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
+parse('http://www.tweaking.com/content/page/windows_repair_all_in_one.html', ['a[href^="http://www.tweaking.com/files/setup"][href$=".zip"]'], '', cat.fix);
+dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup);
+//*/
+
+// Tools
 bleepingcomputer('http://www.bleepingcomputer.com/download/autoruns/', '', cat.tools);
 bleepingcomputer('http://www.bleepingcomputer.com/download/process-explorer/', '', cat.tools);
-bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.slow); // slow ~25mins
-bleepingcomputer('http://www.bleepingcomputer.com/download/emsisoft-antimalware/', '', cat.slow);
-bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', cat.slow); // ~30mins
-bleepingcomputer('http://www.bleepingcomputer.com/download/combofix/', 'Win8.0-max', cat.fast);
-//*/
-parse('http://www.tweaking.com/content/page/windows_repair_all_in_one.html', ['a[href^="http://www.tweaking.com/files/setup"][href$=".zip"]'], '', cat.fix);
 parse('http://support.eset.de/kb3527/', ['a[href^="http://download.eset.com"]'], 'ESET', cat.tools);
-dl('http://download.keit.co/current/recall.zip', 'keit.co', cat.licences_and_passwords);
 parse('http://launcher.nirsoft.net/download.html', ['a[href^="http://download.nirsoft.net/nirsoft_package_1"]'], '', cat.tools);
+//*/
+
+// Installables
+dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.install);
+dl('https://downloads.malwarebytes.org/file/chameleon/', 'Malwarebytes', cat.install);
+bleepingcomputer('http://www.bleepingcomputer.com/download/emsisoft-antimalware/', '', cat.install);
+dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.install); // not portable
+dl('https://downloads.malwarebytes.org/file/regassassin/', 'Malwarebytes', cat.install);  // not portable
+dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.install, '.exe'); // not portable
+bleepingcomputer('http://www.bleepingcomputer.com/download/sophos-virus-removal-tool/', '', cat.install); // not portable
+parse('http://free.antivirus.com/us/rubotted/', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.install);
+//*/
+
+// Product keys & passwords
+dl('http://download.keit.co/current/recall.zip', 'keit.co', cat.licences_and_passwords); // can be pretty slow but seems thorough
+//*/
+
+// Stuff for mac
+dl('https://downloads.malwarebytes.org/file/mbam_for_mac/', 'Malwarebytes', cat.mac, '.dmg');
+
+
+
 
 /*
  * Other tools I want on my technicien's USB key
  * 
  * Greenshot portable
+ * Glary portable
  * Glary installer
+ * CCleaner portable & installer
+ * Defraggler portable & installer
+ * Recuva portable & installer
  * 
  * 
- * Timing of the above tools
- * TrendMicro on clean computer 5mins
- * RogueKiller felt slow, but not super slow ~30mins?
- * Avast_aswMBR checks far more than the mbr, ~25mins
  * 
  */
