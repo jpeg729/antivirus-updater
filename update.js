@@ -41,6 +41,7 @@ var cat = {
   tools: 'tools',
   fix: '5_fix',
   tuneup: '5_fix',
+  install: 'installables',
   mac: 'mac',
   licences_and_passwords: 'licences_and_passwords'
 }
@@ -321,15 +322,16 @@ dl('https://downloads.malwarebytes.org/file/mbam_current/', 'Malwarebytes', cat.
 dl('https://downloads.malwarebytes.org/file/mbar/', 'Malwarebytes_AntiRootkit_Beta', cat.rootkit);
 dl('https://downloads.malwarebytes.org/file/chameleon/', 'Malwarebytes', cat.slow);
 dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup);
+dl('http://downloads.malwarebytes.org/file/jrt', 'Malwarebytes_junkware-removal-tool', cat.fast);
 //dl('https://downloads.malwarebytes.org/file/fileassassin/', 'Malwarebytes', cat.tools); // not portable
 //dl('https://downloads.malwarebytes.org/file/regassassin/', 'Malwarebytes', cat.tools);  // not portable
 //parse('https://www.malwarebytes.org/mac-download/', '.greencta', 'Malwarebytes', cat.mac, '.dmg');
 //*/
 
 // TrendMicro
-parse('http://housecall.trendmicro.com/', ['#download-form a.button'], 'TrendMicro', cat.extra);
-parse('http://free.antivirus.com/us/rootkit-buster/index.html', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit);
-parse('http://free.antivirus.com/us/rubotted/', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit);
+parse('http://housecall.trendmicro.com/', ['#download-form a.button'], 'TrendMicro', cat.fast); // 5mins
+parse('http://free.antivirus.com/us/rootkit-buster/index.html', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.rootkit); // fast
+parse('http://free.antivirus.com/us/rubotted/', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.extra);
 //*/
 
 // Divers autres
@@ -337,22 +339,37 @@ parse('http://www.surfright.nl/en/products/', ['a[href^="http://dl.surfright.nl/
 dl('https://zemana.com/Download/AntiMalware/Portable/Zemana.AntiMalware.Portable.exe?new_affid=189', '', cat.fast);
 dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
 parse('http://www.bitdefender.com/solutions/adware-removal-tool-for-pc.html', ['.free-download'], 'BitDefender-AdWare-Remover', cat.fast);
-dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.extra, '.exe');
+dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.install, '.exe'); // not portable
 
 bleepingcomputer('http://www.bleepingcomputer.com/download/adwcleaner/', '', cat.fast);
 bleepingcomputer('http://www.bleepingcomputer.com/download/rkill/', '', cat.kill);
 bleepingcomputer('http://www.bleepingcomputer.com/download/hijackthis/', '', cat.diagnosis);
-bleepingcomputer('http://www.bleepingcomputer.com/download/mcafee-labs-rootkit-remover/', 'McAfee-Labs', cat.rootkit);
+bleepingcomputer('http://www.bleepingcomputer.com/download/mcafee-labs-rootkit-remover/', 'McAfee-Labs', cat.rootkit); // real fast
 bleepingcomputer('http://www.bleepingcomputer.com/download/panda-anti-rootkit/', 'Panda', cat.rootkit);
 bleepingcomputer('http://www.bleepingcomputer.com/download/sophos-virus-removal-tool/', '', cat.fast);
-bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', 'Microsoft', cat.rootkit);
+bleepingcomputer('http://www.bleepingcomputer.com/download/rootkitrevealer/', 'Microsoft', cat.rootkit); // didn't seem to work
 bleepingcomputer('http://www.bleepingcomputer.com/download/autoruns/', '', cat.tools);
 bleepingcomputer('http://www.bleepingcomputer.com/download/process-explorer/', '', cat.tools);
-bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.rootkit);
+bleepingcomputer('http://www.bleepingcomputer.com/download/aswmbr/', 'Avast', cat.slow); // slow ~25mins
 bleepingcomputer('http://www.bleepingcomputer.com/download/emsisoft-antimalware/', '', cat.slow);
-bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', cat.extra);
+bleepingcomputer('http://www.bleepingcomputer.com/download/roguekiller/', '', cat.slow); // ~30mins
+bleepingcomputer('http://www.bleepingcomputer.com/download/combofix/', 'Win8.0-max', cat.fast);
 //*/
 parse('http://www.tweaking.com/content/page/windows_repair_all_in_one.html', ['a[href^="http://www.tweaking.com/files/setup"][href$=".zip"]'], '', cat.fix);
 parse('http://support.eset.de/kb3527/', ['a[href^="http://download.eset.com"]'], 'ESET', cat.tools);
 dl('http://download.keit.co/current/recall.zip', 'keit.co', cat.licences_and_passwords);
 parse('http://launcher.nirsoft.net/download.html', ['a[href^="http://download.nirsoft.net/nirsoft_package_1"]'], '', cat.tools);
+
+/*
+ * Other tools I want on my technicien's USB key
+ * 
+ * Greenshot portable
+ * Glary installer
+ * 
+ * 
+ * Timing of the above tools
+ * TrendMicro on clean computer 5mins
+ * RogueKiller felt slow, but not super slow ~30mins?
+ * Avast_aswMBR checks far more than the mbr, ~25mins
+ * 
+ */
