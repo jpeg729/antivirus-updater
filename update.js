@@ -82,12 +82,15 @@ function parse(url, selectors, prefix, category, filetype) {
           newUrl = newUrl.replace(/⟨/g, '&'); // hacky bugfix, sometimes the last & of an url gets changed to (
         }
         else { // this case needs a little love
-          newUrl = this.attribs.content;
+          newUrl = $(this).attr('content');
+          log.debug("content url", newUrl);
           let idx = newUrl.indexOf('=');
+          if (idx < 0) newUrl = "";
           newUrl = newUrl.substr(idx + 1);
+          log.debug(newUrl);
         }
         
-        if (seen.indexOf(newUrl) < 0) {
+        if (newUrl && seen.indexOf(newUrl) < 0) {
           seen.push(newUrl);
           log.debug('Found', newUrl);
         
@@ -116,7 +119,7 @@ function parse(url, selectors, prefix, category, filetype) {
 function bleepingcomputer(url, prefix, category, filetype) {
   // Download a file from its page on bleepingcomputer
   // We assume that the first dl_but_choice is the one we want
-  let selectors = ['.dl_choices .dl_but_choice:first-of-type a', 'meta[content^=3]'];
+  let selectors = ['.cz-software-download-area a', 'meta[content^=3]'];//meta[content^=3] //a:contains("click here")
   filetype = filetype || '.exe';
   
   let idx = url.lastIndexOf('/', url.length - 2);
