@@ -355,7 +355,7 @@ bleepingcomputer('http://www.bleepingcomputer.com/download/hijackthis/', '', cat
 dl('http://media.kaspersky.com/utilities/VirusUtilities/RU/cleanautorun.exe', 'Kaspersky', cat.fix);
 dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
 parse('http://www.tweaking.com/content/page/windows_repair_all_in_one.html', ['a[href^="http://www.tweaking.com/files/setup"][href$=".zip"]'], '', cat.fix);
-dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup);
+dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup); // looks like a setup file, but isn't really
 //*/
 
 // Tools
@@ -363,6 +363,8 @@ bleepingcomputer('http://www.bleepingcomputer.com/download/autoruns/', '', cat.t
 bleepingcomputer('http://www.bleepingcomputer.com/download/process-explorer/', '', cat.tools);
 parse('http://support.eset.de/kb3527/', ['a[href^="http://download.eset.com"]'], 'ESET', cat.tools);
 parse('http://launcher.nirsoft.net/download.html', ['a[href^="http://download.nirsoft.net/nirsoft_package_1"]'], '', cat.tools);
+parse('https://www.microsoft.com/en-us/download/confirmation.aspx?id=39982', ['a[href$="adksetup.exe"]'], '', cat.tools); // installer
+dl('https://download.sysinternals.com/files/SysinternalsSuite.zip', '', cat.tools);
 //*/
 
 // Installables
@@ -382,9 +384,6 @@ dl('http://download.keit.co/current/recall.zip', 'keit.co', cat.licences_and_pas
 
 // Stuff for mac
 dl('https://downloads.malwarebytes.org/file/mbam_for_mac/', 'Malwarebytes', cat.mac, '.dmg');
-
-
-
 
 /*
  * Other tools I want on my technicien's USB key
