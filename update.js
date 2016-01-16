@@ -80,6 +80,7 @@ function parse(url, selectors, prefix, category, filetype) {
         let newUrl = this.attribs.href || this.attribs.src;
         if (newUrl) {
           newUrl = newUrl.replace(/⟨/g, '&'); // hacky bugfix, sometimes the last & of an url gets changed to (
+          if (newUrl.substr(0,2) == "//") newUrl = "http:"+newUrl // TODO find protocol used previously
         }
         else { // this case needs a little love
           newUrl = $(this).attr('content');
@@ -365,6 +366,7 @@ parse('http://support.eset.de/kb3527/', ['a[href^="http://download.eset.com"]'],
 parse('http://launcher.nirsoft.net/download.html', ['a[href^="http://download.nirsoft.net/nirsoft_package_1"]'], '', cat.tools);
 parse('https://www.microsoft.com/en-us/download/confirmation.aspx?id=39982', ['a[href$="adksetup.exe"]'], '', cat.tools); // installer
 dl('https://download.sysinternals.com/files/SysinternalsSuite.zip', '', cat.tools);
+dl('http://ultimateoutsider.com/downloads/GWX_control_panel.exe', '', cat.tools);
 //*/
 
 // Installables
@@ -376,6 +378,7 @@ dl('https://downloads.malwarebytes.org/file/regassassin/', 'Malwarebytes', cat.i
 dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Portable', cat.install, '.exe'); // not portable
 bleepingcomputer('http://www.bleepingcomputer.com/download/sophos-virus-removal-tool/', '', cat.install); // not portable
 parse('http://free.antivirus.com/us/rubotted/', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.install);
+dl('http://ultimateoutsider.com/downloads/GwxControlPanelSetup.exe', '', cat.install);
 //*/
 
 // Product keys & passwords
