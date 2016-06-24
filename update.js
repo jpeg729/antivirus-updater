@@ -33,7 +33,7 @@ process.chdir(__dirname);
 
 var cat = {
   safe_mode: '0_safe_mode',
-  kill: '1_kill',
+  kill: '1_kill-n-clean',
   fast: '2_fast',
   slow: '3_slow',
   extra: '4_extra',
@@ -57,12 +57,16 @@ function parse(url, selectors, prefix, category, filetype) {
   }
   log.debug('parse'.magenta, url, ',', selectors, ',', prefix, ',', category, ',', filetype);
   
-  request(url, function (error, response, body) {
+  let requestOptions = {
+    url: url,
+    jar: true
+  }
+  request(requestOptions, function (error, response, body) {
     if (!error && response.statusCode == 200) {
       //log.info(body); // Show the HTML
       
       let $ = cheerio.load(body);
-      let seen = [];
+      let seen = [url];
       let selector;
       
       if (Array.isArray(selectors)) {
@@ -81,6 +85,12 @@ function parse(url, selectors, prefix, category, filetype) {
         if (newUrl) {
           newUrl = newUrl.replace(/⟨/g, '&'); // hacky bugfix, sometimes the last & of an url gets changed to (
           if (newUrl.substr(0,2) == "//") newUrl = "http:"+newUrl // TODO find protocol used previously
+          if (newUrl.substr(0,4) != "http" && seen.length) { // need to add hostname
+            let previous = seen[seen.length -1];
+            previous = previous.split('/')[2];
+            log.trace("Adding hostname",previous,"to",newUrl);
+            newUrl = "http://" + previous + "/" + newUrl;
+          }
         }
         else { // this case needs a little love
           newUrl = $(this).attr('content');
@@ -152,6 +162,7 @@ function dl(url, prefix, category, filetype, referer) {
   // Set download options
   let requestOptions = {
     url: url,
+    jar: true,
     headers: {
       'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.93 Safari/537.36',
       //'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -257,6 +268,10 @@ function parseName(host, path, prefix, filetype) {
     else if (prefix) {
       name = prefix + '_' + name; // no type checking, bad
     }
+    
+    if (filetype) {
+      name = name + filetype;
+    }
   }
   name = name.replace(/%20/g, '_');
   log.debug('parseName'.magenta, host, path, name);
@@ -302,17 +317,21 @@ function unzip(zipfilename) {
     }
     else {
       zipfile.on("entry", function(entry) {
-        if (/\/$/.test(entry.fileName)) {
-          // directory file names end with '/'
-          mkdirp(destination + entry.fileName);
-          return;
+        if (/\//.test(entry.fileName)) {
+          let dirname = destination + entry.fileName;
+          let idx = dirname.lastIndexOf('/');
+          dirname = dirname.substring(0, idx + 1);
+          log.trace('Create dir', dirname);
+          mkdirp(dirname);
         }
-        zipfile.openReadStream(entry, function(err, readStream) {
-          if (err) throw err;
-          // ensure parent directory exists, and then: 
-          readStream.pipe(fs.createWriteStream(destination + entry.fileName));
-          log.trace('Extracting file', destination + entry.fileName);
-        });
+        if (!/\/$/.test(entry.fileName)) {
+          zipfile.openReadStream(entry, function(err, readStream) {
+            if (err) throw err;
+            // ensure parent directory exists, and then: 
+            readStream.pipe(fs.createWriteStream(destination + entry.fileName));
+            log.trace('Extracting file', destination + entry.fileName);
+          });
+        }
       });
     }
   });
@@ -320,6 +339,7 @@ function unzip(zipfilename) {
 
 // Kill running stuff & fix a few basic probs
 bleepingcomputer('http://www.bleepingcomputer.com/download/rkill/', '', cat.kill);
+dl('http://www.piriform.com/ccleaner/download/portable/downloadfile', 'Ccleaner', cat.kill, '.zip');
 //*/
 
 // Fast acting tools
@@ -357,6 +377,13 @@ dl('http://media.kaspersky.com/utilities/VirusUtilities/RU/cleanautorun.exe', 'K
 dl('http://kb.eset.com/library/ESET/KB%20Team%20Only/Malware/ServicesRepair.exe', 'ESET', cat.fix);
 parse('http://www.tweaking.com/content/page/windows_repair_all_in_one.html', ['a[href^="http://www.tweaking.com/files/setup"][href$=".zip"]'], '', cat.fix);
 dl('https://downloads.malwarebytes.org/file/startuplite', 'Malwarebytes', cat.tuneup); // looks like a setup file, but isn't really
+dl('http://www.piriform.com/defraggler/download/portable/downloadfile', 'Defraggler', cat.fix, '.zip');
+dl('http://www.piriform.com/recuva/download/portable/downloadfile', 'Recuva', cat.fix, '.zip');
+//dl('http://download.glarysoft.com/guportable.zip', '', cat.fix);
+//parse('http://download.cnet.com/Glary-Utilities-Portable/3001-2094_4-75450651.html?hlndr=1', ['a[href$="guportable.exe"]'], '', cat.fix);
+//parse('http://www.glarysoft.com/glary-utilities/builds/', ['a[href$=".zip"]'], '', cat.fix); // no permission
+parse('http://www.majorgeeks.com/files/details/glary_utilities_portable.html', ['a[href$=",1.html"]', '.content a[href*="action=download"]'], '', cat.fix);
+dl('http://go.microsoft.com/?linkid=9830262', 'MS_Update_Fixer', cat.fix);
 //*/
 
 // Tools
@@ -367,6 +394,8 @@ parse('http://launcher.nirsoft.net/download.html', ['a[href^="http://download.ni
 parse('https://www.microsoft.com/en-us/download/confirmation.aspx?id=39982', ['a[href$="adksetup.exe"]'], '', cat.tools); // installer
 dl('https://download.sysinternals.com/files/SysinternalsSuite.zip', '', cat.tools);
 dl('http://ultimateoutsider.com/downloads/GWX_control_panel.exe', '', cat.tools);
+//parse('https://sourceforge.net/projects/greenshot/files/Greenshot/Greenshot%201.2/Greenshot-NO-INSTALLER-1.2.8.12-RELEASE.zip/download', ['a.direct-download'], 'Greenshot.zip', cat.tools);
+dl('http://downloads.sourceforge.net/project/greenshot/Greenshot/Greenshot%201.2/Greenshot-NO-INSTALLER-1.2.8.12-RELEASE.zip?r=https%3A%2F%2Fsourceforge.net%2Fprojects%2Fgreenshot%2Ffiles%2FGreenshot%2FGreenshot%25201.2%2F&ts=1455815547&use_mirror=heanet', '', cat.tools);
 //*/
 
 // Installables
@@ -379,6 +408,10 @@ dl('http://www.superantispyware.com/sasportablehome.php', 'SuperAntiSpyware_Port
 bleepingcomputer('http://www.bleepingcomputer.com/download/sophos-virus-removal-tool/', '', cat.install); // not portable
 parse('http://free.antivirus.com/us/rubotted/', ['.cta-primary', 'tr .file_link'], 'TrendMicro', cat.install);
 dl('http://ultimateoutsider.com/downloads/GwxControlPanelSetup.exe', '', cat.install);
+dl('http://download.glarysoft.com/gu5setup.exe', 'Glary', cat.install);
+parse('http://www.piriform.com/defraggler/download/standard', ['a[href$=".exe"]'], 'Defraggler', cat.install);
+parse('http://www.piriform.com/recuva/download/standard', ['a[href$=".exe"]'], 'Recuva', cat.install);
+parse('http://www.piriform.com/ccleaner/download/standard', ['a[href$=".exe"]'], 'CCleaner', cat.install);
 //*/
 
 // Product keys & passwords
@@ -391,12 +424,7 @@ dl('https://downloads.malwarebytes.org/file/mbam_for_mac/', 'Malwarebytes', cat.
 /*
  * Other tools I want on my technicien's USB key
  * 
- * Greenshot portable
- * Glary portable
- * Glary installer
- * CCleaner portable & installer
- * Defraggler portable & installer
- * Recuva portable & installer
+ * Greenshot portable preconfigured
  * 
  * 
  * 
